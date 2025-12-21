@@ -11,6 +11,7 @@
     <input type="file" id="fileInput"/>
     <button onclick="onUpload()">Upload File</button>
     <script>
+        const API_BASE = "https://cdn-api.azurewebsites.net";
         async function onUpload() {
           const file = document.querySelector("input[type=file]").files[0];
           if (!file) {
@@ -29,7 +30,7 @@
         }
 
         async function get_presigned_url(file) {
-          const res = await fetch("http://localhost:8000/upload/init", {
+          const res = await fetch(`${API_BASE}/upload/init`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -62,7 +63,7 @@
 
         async function notifyComplete(key, status) {
           try {
-            const res = await fetch("http://localhost:8000/upload/complete", {
+            const res = await fetch(`${API_BASE}/upload/complete`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ key, status }),
