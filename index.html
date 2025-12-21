@@ -11,7 +11,7 @@
     <input type="file" id="fileInput"/>
     <button onclick="onUpload()">Upload File</button>
     <script>
-        const API_BASE = "https://cdn-api.azurewebsites.net";
+        const API_BASE = "https://api.cdn.tobiolajide.com";
         async function onUpload() {
           const file = document.querySelector("input[type=file]").files[0];
           if (!file) {
