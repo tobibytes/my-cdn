@@ -8,6 +8,7 @@ use axum::{
     routing::{get, post},
 };
 mod models;
+use http::StatusCode;
 use tower_http::cors::CorsLayer;
 mod controllers;
 mod services;
@@ -45,6 +46,7 @@ async fn main() {
         let media_controller = media_controller_init();
     let app = Router::new()
         .route("/", get(root))
+        .route("/health", get(health))
         .route("/upload/init", post(upload_init_handler))
         .route("/upload/complete", post(upload_complete_handler))
         .layer(cors)
@@ -60,4 +62,8 @@ async fn root() -> Response {
         Json(String::from("Welcome to url shortener")),
     )
         .into_response()
+}
+
+async fn health() -> Response {
+        (StatusCode::OK, String::from("OK")).into_response()
 }

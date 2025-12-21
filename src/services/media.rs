@@ -13,6 +13,7 @@ use crate::models::{UploadCompleteBody, UploadCompleteResponse, UploadInitBody, 
 pub struct MediaService {
     bucket: String,
     endpoint_url: String,
+    pub_url: String,
     client: Client,
 }
 
@@ -43,6 +44,7 @@ impl MediaService {
         let ac_id = load_env_first(&["R2_ACCOUNT_ID"], "R2 account id");
         let bucket = load_env_first(&["R2_BUCKET"], "R2 bucket");
         let s_key = load_env_first(&["R2_SECRET_KEY", "R2_ACCOUNT_SECRET_KEY"], "R2 secret key");
+        let pub_url = load_env_first(&["R2_PUBLIC_URL"], "R2 public url");
         let endpoint_url = normalize_endpoint(&ac_id);
         let creds = Credentials::new(ac_key, s_key, None, None, "r2");
         let region = Region::new("auto");
@@ -55,7 +57,7 @@ impl MediaService {
             .build();
         let client = Client::from_conf(s3_config);
         info!(bucket=%bucket, "media service configured");
-        MediaService { client, bucket, endpoint_url }
+        MediaService { client, bucket, endpoint_url, pub_url }
     }
 
 
@@ -73,8 +75,9 @@ impl MediaService {
             .content_type(content_type)
             .presigned(presign_cfg)
             .await?;
+        
         let uri = presigned.uri().to_string();
-        let public_url = format!("{}/{}/{}", self.endpoint_url.trim_end_matches('/'), self.bucket, key);
+        let public_url = format!("{}/{}", self.pub_url.trim_end_matches('/'), key);
         info!(%uri, %key, %public_url, "presigned URL generated");
         Ok(UploadInitResponse {
             upload_url: uri,
