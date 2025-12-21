@@ -1,0 +1,5 @@
+.env
+target
+.git
+index.html
+docker-compose.yml

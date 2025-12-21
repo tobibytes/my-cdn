@@ -1,0 +1,16 @@
+
+services:
+  cdn:
+    container_name: cdn
+    build: .
+    env_file:
+     - ./.env
+    networks:
+     - default
+    ports:
+      - "8000:8000"
+
+networks:
+  default:
+    name: app-network
+    driver: bridge

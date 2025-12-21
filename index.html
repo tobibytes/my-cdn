@@ -1,0 +1,82 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+
+    <h1>Welcome to My cdn</h1>
+    <label>App name: <input type="text" id="appName" placeholder="my-app" /></label>
+    <input type="file" id="fileInput"/>
+    <button onclick="onUpload()">Upload File</button>
+    <script>
+        async function onUpload() {
+          const file = document.querySelector("input[type=file]").files[0];
+          if (!file) {
+            alert("Pick a file first");
+            return;
+          }
+          const { upload_url, key, public_url } = await get_presigned_url(file);
+          console.log("Received presign", { upload_url, key, public_url });
+          const ok = await upload(upload_url, file);
+          await notifyComplete(key, ok ? "success" : "failed");
+          if (ok) {
+            alert(`Upload complete!\nKey: ${key}\nPublic URL: ${public_url}`);
+          } else {
+            alert("Upload failed; check console for details.");
+          }
+        }
+
+        async function get_presigned_url(file) {
+          const res = await fetch("http://localhost:8000/upload/init", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              filename: file.name,
+              content_type: file.type,
+              size: file.size,
+              app: document.querySelector("#appName").value || "default",
+            }),
+          });
+          if (!res.ok) {
+            throw new Error(`presign failed: ${res.status}`);
+          }
+          return await res.json();
+        }
+
+        async function upload(url, file) {
+          const res = await fetch(url, {
+            method: "PUT",
+            headers: { "Content-Type": file.type },
+            body: file,
+          });
+          if (!res.ok) {
+            console.error("Upload failed", res.status, await res.text());
+            return false;
+          }
+          return true;
+        }
+
+        async function notifyComplete(key, status) {
+          try {
+            const res = await fetch("http://localhost:8000/upload/complete", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ key, status }),
+            });
+            if (!res.ok) {
+              console.warn("Notify completion failed", res.status, await res.text());
+            } else {
+              const data = await res.json();
+              console.log("Completion ack", data);
+            }
+          } catch (e) {
+            console.warn("Completion notify error", e);
+          }
+        }
+    </script>
+  </body>
+</html>
