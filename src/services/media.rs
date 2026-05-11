@@ -12,6 +12,7 @@ use crate::models::{UploadCompleteBody, UploadCompleteResponse, UploadInitBody, 
 #[derive(Clone)]
 pub struct MediaService {
     bucket: String,
+    #[allow(dead_code)]
     endpoint_url: String,
     pub_url: String,
     client: Client,
